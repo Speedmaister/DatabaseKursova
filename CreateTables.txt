@@ -1,0 +1,85 @@
+create table users
+(
+	name varchar(30) not null,
+	password varchar(30) not null,
+	primary key(name)
+)
+engine = innodb;
+
+create table channels
+(
+	id tinyint not null auto_increment,
+	owner_name varchar(30) not null,
+	primary key(id),
+	foreign key(owner_name) references users(name)
+	on delete cascade on update cascade
+)
+engine = innodb;
+
+create table messages
+(
+	id int not null auto_increment,
+	send_date date not null,
+	content varchar(255) not null,
+	channel_id tinyint not null,
+	primary key(id),
+	foreign key(channel_id) references channels(id)
+	on delete cascade on update cascade
+)
+engine = innodb;
+
+create table users_channels
+(
+	channel_id tinyint not null,
+	user_name varchar(30) not null,
+	foreign key(channel_id) references channels(id)
+	on delete cascade on update cascade,
+	foreign key(user_name) references users(name)
+	on delete cascade on update cascade
+)
+engine = innodb;
+
+--1.Validate user name and password
+select name,password
+from users
+where name = "IMETO" and password = "PAROLATA";
+
+--2.Send message to database
+select channels.id
+from channels
+where channels.owner_name = "USER NAME";
+
+insert into messages values("SEND DATE","CONTENT","CHANNEL_ID");
+
+--3.Subscribe user to another channel
+select channels.id
+from channels
+where channels.owner_name = "CHANNEL OWNER";
+
+insert into users_channels values("CHANNEL_ID","USER_NAME");
+
+--4.Get all messages from channels subscribed by the user
+select t2.owner_name,messages.send_date,messages.content
+from messages join 
+(
+	select t1.channel_id,channels.owner_name
+	from channels join 
+	(
+		select users_channels.channel_id
+		from users_channels
+		where users_channels.user_name = "USER NAME"
+		order by users_channels.channel_id
+	) as t1
+	on t1.channel_id = channels.id
+	order by t1.channel_id
+) as t2
+on messages.channel_id = t2.channel_id
+order by messages.id;
+
+1.Klienta se svyrzva kym servera
+2.Pra6ta si username i parola
+3.Server-a gi obrabotva 1)priema gi i pra6ta syob6tenie 4e svyrzvaneto e uspe6no
+						2)gre6ni danni i prekysva vryzkata s klienta KRAI
+4.Pra6ta syob6tenie.-> pra6ta "message" ; vzima teksta ot text box i go pra6ta na servera. 
+5.Svyrzva se s kanal.->pra6ta "subscribe" ; vzima teksta ot subscribe box i go pra6ta na servera.
+6.Za krai na vryzkata->pra6ta "quit"; ot butona za izhod;
